@@ -2,31 +2,29 @@ require('pg')
 
 class PizzaOrder
 
-  attr_accessor :first_name, :last_name, :topping, :quantity
-  attr_reader :id
+  attr_accessor :topping, :quantity
+  attr_reader :id, :customer_id
 
   def initialize(options)
     @id = options['id'].to_i if options['id']
-    @first_name = options['first_name']
-    @last_name = options['last_name']
     @topping = options['topping']
-    @quantity = options['quantity'].to_i
+    @quantity = options['quantity'].to_i()
+    @customer_id = options['customer_id'].to_i()
   end
 
   def save()
     db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "INSERT INTO pizza_orders
     (
-      first_name,
-      last_name,
       topping,
-      quantity
+      quantity,
+      customer_id
     ) VALUES
     (
-      $1, $2, $3, $4
+      $1, $2, $3
     )
     RETURNING id"
-    values = [@first_name, @last_name, @topping, @quantity]
+    values = [@topping, @quantity, @customer_id]
     db.prepare("save", sql)
     results = db.exec_prepared("save", values)
     db.close()
@@ -88,6 +86,16 @@ class PizzaOrder
     orders = db.exec_prepared("all")
     db.close()
     return orders.map { |order| PizzaOrder.new(order) }
+  end
+
+  def customer()
+    db = PG.connect({dbname: "pizza_shop", host: "localhost"})
+    sql = "SELECT * FROM customers WHERE id = $1"
+    values = [@customer_id]
+    db.prepare("customer", sql)
+    results = db.exec_prepared("customer", values)
+    db.close()
+    return Customer.new(results[0])
   end
 
 end
