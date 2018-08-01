@@ -36,8 +36,17 @@ album2 = Album.new(
   }
 )
 
+album3 = Album.new(
+  {
+    'title' => 'The Peace and the Panic',
+    'genre' => 'Rock',
+    'artist_id' => neck_deep.id
+  }
+)
+
 album1.save()
 album2.save()
+album3.save()
 
 
 binding.pry
