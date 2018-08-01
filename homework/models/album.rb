@@ -7,7 +7,7 @@ class Album
   attr_accessor :title, :genre
 
   def initialize(options)
-    @id = options['id'] if options['id']
+    @id = options['id'].to_i() if options['id']
     @title = options['title']
     @genre = options['genre']
     @artist_id = options['artist_id'].to_i()
@@ -51,6 +51,14 @@ class Album
     values = [@id]
     SqlRunner.run(sql, values)
   end
+
+  def self.find(id)
+    sql = "SELECT * FROM albums WHERE id = $1"
+    values = [id]
+    results = SqlRunner.run(sql, values)
+    return Album.new(results[0])
+  end
+
 
 
 end
