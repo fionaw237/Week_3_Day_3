@@ -1,4 +1,5 @@
 require('pg')
+require_relative("../db/sql_runner")
 
 class PizzaOrder
 
@@ -13,7 +14,6 @@ class PizzaOrder
   end
 
   def save()
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "INSERT INTO pizza_orders
     (
       topping,
@@ -25,76 +25,57 @@ class PizzaOrder
     )
     RETURNING id"
     values = [@topping, @quantity, @customer_id]
-    db.prepare("save", sql)
-    results = db.exec_prepared("save", values)
-    db.close()
+
+    results = SqlRunner.run(sql, values)
+
     @id = results[0]["id"].to_i
   end
 
   def update()
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "
     UPDATE pizza_orders SET (
-      first_name,
-      last_name,
       topping,
-      quantity
+      quantity,
+      customer_id
     ) =
     (
-      $1,$2, $3, $4
+      $1,$2, $3
     )
-    WHERE id = $5"
-    values = [@first_name, @last_name, @topping, @quantity, @id]
-    db.prepare("update", sql)
-    db.exec_prepared("update", values)
-    db.close()
+    WHERE id = $4"
+    values = [@topping, @quantity, @customer_id, @id]
+    SqlRunner.run(sql, values)
   end
 
   def delete()
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "DELETE FROM pizza_orders where id = $1"
     values = [@id]
-    db.prepare("delete", sql)
-    db.exec_prepared("delete", values)
-    db.close()
+    SqlRunner.run(sql, values)
   end
 
   def self.find(id)
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "SELECT * FROM pizza_orders WHERE id = $1"
     values = [id]
-    db.prepare("find", sql)
-    results = db.exec_prepared("find", values)
-    db.close()
-    order_hash = results.first
+    results = SqlRunner.run(sql, values)
+    order_hash = results.first()
     order = PizzaOrder.new(order_hash)
     return order
   end
 
   def self.delete_all()
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "DELETE FROM pizza_orders"
-    db.prepare("delete_all", sql)
-    db.exec_prepared("delete_all")
-    db.close()
+    SqlRunner.run(sql)
   end
 
   def self.all()
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "SELECT * FROM pizza_orders"
-    db.prepare("all", sql)
-    orders = db.exec_prepared("all")
-    db.close()
+    orders = SqlRunner.run(sql)
     return orders.map { |order| PizzaOrder.new(order) }
   end
 
   def customer()
-    db = PG.connect({dbname: "pizza_shop", host: "localhost"})
     sql = "SELECT * FROM customers WHERE id = $1"
     values = [@customer_id]
-    db.prepare("customer", sql)
-    results = db.exec_prepared("customer", values)
-    db.close()
+    results = SqlRunner.run(sql, values)
     return Customer.new(results[0])
   end
 

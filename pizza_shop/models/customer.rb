@@ -1,4 +1,5 @@
 require('pg')
+require_relative("../db/sql_runner")
 
 class Customer
   attr_reader :id
@@ -11,31 +12,22 @@ class Customer
   end
 
   def save()
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "INSERT INTO customers (first_name, last_name)
           VALUES ($1, $2) RETURNING id"
     values = [@first_name, @last_name]
-    db.prepare("save", sql)
-    results = db.exec_prepared("save", values)
-    db.close()
+    results = SqlRunner.run(sql, values)
     @id = results[0]['id'].to_i()
   end
 
   def self.delete_all()
-    db = PG.connect({ dbname: 'pizza_shop', host: 'localhost' })
     sql = "DELETE FROM customers"
-    db.prepare("delete_all", sql)
-    db.exec_prepared("delete_all")
-    db.close()
+    results = SqlRunner.run(sql)
   end
 
   def orders()
-    db = PG.connect({dbname: 'pizza_shop', host: 'localhost'})
     sql = "SELECT * FROM pizza_orders WHERE customer_id = $1"
     values = [@id]
-    db.prepare("orders", sql)
-    results = db.exec_prepared("orders", values)
-    db.close()
+    results = SqlRunner.run(sql, values)
     return results.map {|order| PizzaOrder.new(order)}
     return
   end
