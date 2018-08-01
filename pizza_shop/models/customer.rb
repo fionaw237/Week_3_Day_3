@@ -29,7 +29,6 @@ class Customer
     values = [@id]
     results = SqlRunner.run(sql, values)
     return results.map {|order| PizzaOrder.new(order)}
-    return
   end
 
 end
