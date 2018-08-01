@@ -43,8 +43,13 @@ class Artist
   end
 
   def delete()
-    sql = "DELETE FROM artists WHERE id = $1"
+    #first delete the albums associated with that artist
+    sql = "DELETE FROM albums where artist_id = $1"
     values = [@id]
+    SqlRunner.run(sql, values)
+
+    #now delete the artist itself
+    sql = "DELETE FROM artists WHERE id = $1"
     SqlRunner.run(sql, values)
   end
 
