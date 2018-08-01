@@ -15,7 +15,12 @@ class Artist
     sql = "INSERT INTO artists (name) VALUES ($1) RETURNING id"
     values = [@name]
     results = SqlRunner.run(sql, values)
-    #@id = results[0]['id'].to_i()
+    @id = results[0]['id'].to_i()
+  end
+
+  def self.delete_all()
+    sql = "DELETE FROM artists"
+    SqlRunner.run(sql)
   end
 
 end
